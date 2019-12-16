@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hz.ssm.dao.UsersMapper" >
+  <resultMap id="BaseResultMap" type="com.hz.ssm.pojo.Users" >
+    <id column="userid" property="userid" jdbcType="VARCHAR" />
+    <result column="username" property="username" jdbcType="VARCHAR" />
+    <result column="userpwd" property="userpwd" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="INTEGER" />
+    <result column="userdesc" property="userdesc" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    userid, username, userpwd, state, userdesc
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.hz.ssm.pojo.UsersExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from users
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from users
+    where userid = #{userid,jdbcType=VARCHAR}
+  </select>
+  
+  
+  <!-- 根据用户Id查询对应的角色信息 -->
+  <select id="findRoleInfoByUserId" resultType="com.hz.ssm.pojo.Role" parameterType="java.lang.String" >
+   		SELECT *
+			FROM role r
+			WHERE r.roleid IN 
+				(SELECT sur.role_id
+				FROM set_user_role sur
+				WHERE sur.user_id = #{userid})
+  </select>
+  
+  <!-- 根据用户Id查询对应的权限信息 -->
+  <select id="findRightsInfoByUserId" parameterType="string" resultType="com.hz.ssm.pojo.Rights">
+		SELECT *
+		FROM rights t
+		WHERE t.rightsid IN 	
+			(SELECT srr.Rights_Id 
+			FROM set_role_rights srr
+			WHERE srr.Role_Id IN
+				(SELECT sur.role_id
+				FROM set_user_role sur
+				WHERE sur.user_id = #{userid}))
+  </select>
+  
+  
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from users
+    where userid = #{userid,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.hz.ssm.pojo.UsersExample" >
+    delete from users
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.hz.ssm.pojo.Users" >
+    insert into users (userid, username, userpwd, 
+      state, userdesc)
+    values (#{userid,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR}, #{userpwd,jdbcType=VARCHAR}, 
+      #{state,jdbcType=INTEGER}, #{userdesc,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.hz.ssm.pojo.Users" >
+    insert into users
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="userid != null" >
+        userid,
+      </if>
+      <if test="username != null" >
+        username,
+      </if>
+      <if test="userpwd != null" >
+        userpwd,
+      </if>
+      <if test="state != null" >
+        state,
+      </if>
+      <if test="userdesc != null" >
+        userdesc,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="userid != null" >
+        #{userid,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null" >
+        #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="userpwd != null" >
+        #{userpwd,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        #{state,jdbcType=INTEGER},
+      </if>
+      <if test="userdesc != null" >
+        #{userdesc,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.hz.ssm.pojo.UsersExample" resultType="java.lang.Integer" >
+    select count(*) from users
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update users
+    <set >
+      <if test="record.userid != null" >
+        userid = #{record.userid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.username != null" >
+        username = #{record.username,jdbcType=VARCHAR},
+      </if>
+      <if test="record.userpwd != null" >
+        userpwd = #{record.userpwd,jdbcType=VARCHAR},
+      </if>
+      <if test="record.state != null" >
+        state = #{record.state,jdbcType=INTEGER},
+      </if>
+      <if test="record.userdesc != null" >
+        userdesc = #{record.userdesc,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update users
+    set userid = #{record.userid,jdbcType=VARCHAR},
+      username = #{record.username,jdbcType=VARCHAR},
+      userpwd = #{record.userpwd,jdbcType=VARCHAR},
+      state = #{record.state,jdbcType=INTEGER},
+      userdesc = #{record.userdesc,jdbcType=VARCHAR}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.hz.ssm.pojo.Users" >
+    update users
+    <set >
+      <if test="username != null" >
+        username = #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="userpwd != null" >
+        userpwd = #{userpwd,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        state = #{state,jdbcType=INTEGER},
+      </if>
+      <if test="userdesc != null" >
+        userdesc = #{userdesc,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where userid = #{userid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.hz.ssm.pojo.Users" >
+    update users
+    set username = #{username,jdbcType=VARCHAR},
+      userpwd = #{userpwd,jdbcType=VARCHAR},
+      state = #{state,jdbcType=INTEGER},
+      userdesc = #{userdesc,jdbcType=VARCHAR}
+    where userid = #{userid,jdbcType=VARCHAR}
+  </update>
+</mapper>
